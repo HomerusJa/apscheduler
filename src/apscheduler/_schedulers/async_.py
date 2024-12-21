@@ -47,6 +47,7 @@ from .._exceptions import (
     JobCancelled,
     JobDeadlineMissed,
     JobLookupError,
+    JobTimedOutError,
     ScheduleLookupError,
 )
 from .._marshalling import callable_from_ref, callable_to_ref
@@ -1187,6 +1188,12 @@ class AsyncScheduler:
                         job, JobOutcome.cancelled, started_at=start_time
                     )
                     await self.data_store.release_job(self.identity, job, result)
+            except JobTimedOutError:
+                self.logger.info("Job %s timed out", job.id)
+                result = JobResult.from_job(
+                    job, JobOutcome.timeout, started_at=start_time
+                )
+                await self.data_store.release_job(self.identity, job, result)
             except BaseException as exc:
                 if isinstance(exc, Exception):
                     self.logger.exception("Job %s raised an exception", job.id)

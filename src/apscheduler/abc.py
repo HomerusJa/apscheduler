@@ -401,5 +401,5 @@ class JobExecutor(metaclass=ABCMeta):
         :param func: the function to call
         :param job: the associated job
         :return: the return value of ``func`` (potentially awaiting on the returned
-            aawaitable, if any)
+            awaitable, if any)
         """

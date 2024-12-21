@@ -45,6 +45,12 @@ class JobCancelled(Exception):
     """
 
 
+class JobTimedOutError(Exception):
+    """
+    Raised by :meth:`~Scheduler.get_job_result` if the job timed out.
+    """
+
+
 class JobDeadlineMissed(Exception):
     """
     Raised by :meth:`~Scheduler.get_job_result` if the job failed to

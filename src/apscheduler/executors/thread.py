@@ -6,8 +6,9 @@ from functools import partial
 from typing import Any
 
 import attrs
-from anyio import CapacityLimiter, to_thread
+from anyio import CapacityLimiter, fail_after, to_thread
 
+from .._exceptions import JobTimedOutError
 from .._structures import Job
 from ..abc import JobExecutor
 
@@ -27,5 +28,13 @@ class ThreadPoolJobExecutor(JobExecutor):
         self._limiter = CapacityLimiter(self.max_workers)
 
     async def run_job(self, func: Callable[..., Any], job: Job) -> Any:
+        timeout_seconds = (
+            job.timeout.total_seconds() if job.timeout is not None else None
+        )
         wrapped = partial(func, *job.args, **job.kwargs)
-        return await to_thread.run_sync(wrapped, limiter=self._limiter)
+
+        try:
+            with fail_after(timeout_seconds):
+                return await to_thread.run_sync(wrapped, limiter=self._limiter)
+        except TimeoutError:
+            raise JobTimedOutError from None

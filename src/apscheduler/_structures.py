@@ -289,6 +289,8 @@ class Job:
         acquired the job for execution
     :var str | None acquired_until: the time after which other schedulers are free to
         acquire the job for processing even if it is still marked as acquired
+    :var ~datetime.timedelta | None timeout: the maximum amount of time the job is
+        allowed to run
     """
 
     id: UUID = attrs.field(factory=uuid4, on_setattr=frozen)
@@ -322,6 +324,9 @@ class Job:
     acquired_by: str | None = attrs.field(default=None, repr=False)
     acquired_until: datetime | None = attrs.field(
         converter=as_aware_datetime, default=None, repr=False
+    )
+    timeout: timedelta | None = attrs.field(
+        converter=as_timedelta, default=None, repr=False, on_setattr=frozen
     )
 
     @property

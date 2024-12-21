@@ -10,8 +10,9 @@ import anyio
 import attrs
 from anyio.from_thread import BlockingPortal
 
-from apscheduler import Job, current_job
-from apscheduler.abc import JobExecutor
+from .. import Job, current_job
+from .._exceptions import JobTimedOutError
+from ..abc import JobExecutor
 
 if "PySide6" in sys.modules:
     from PySide6.QtCore import QObject, Signal
@@ -44,10 +45,18 @@ class QtJobExecutor(JobExecutor):
         self._portal = await exit_stack.enter_async_context(BlockingPortal())
 
     async def run_job(self, func: Callable[..., T_Retval], job: Job) -> Any:
+        timeout_seconds = (
+            job.timeout.total_seconds() if job.timeout is not None else None
+        )
+
         future: Future[T_Retval] = Future()
         event = anyio.Event()
         self._signals.run_job.emit((func, job, future, event))
-        await event.wait()
+        try:
+            async with anyio.fail_after(timeout_seconds):
+                await event.wait()
+        except TimeoutError:
+            raise JobTimedOutError from None
         return future.result(0)
 
     def run_in_qt_thread(

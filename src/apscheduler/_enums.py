@@ -81,6 +81,10 @@ class JobOutcome(Enum):
 
         the worker running the job stopped unexpectedly and the job was never marked
         as done
+
+    .. attribute:: timeout
+
+        the job was forcibly stopped because it exceeded its maximum running time
     """
 
     success = auto()
@@ -89,6 +93,7 @@ class JobOutcome(Enum):
     deserialization_failed = auto()
     cancelled = auto()
     abandoned = auto()
+    timeout = auto()
 
 
 class ConflictPolicy(Enum):
