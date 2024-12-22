@@ -355,6 +355,7 @@ class SQLAlchemyDataStore(BaseExternalDataStore):
             Column("created_at", timestamp_type, nullable=False, index=True),
             Column("acquired_by", Unicode(500), index=True),
             Column("acquired_until", timestamp_type),
+            Column("timeout", interval_type),
         )
         Table(
             "job_results",

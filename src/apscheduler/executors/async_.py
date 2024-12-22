@@ -35,7 +35,7 @@ class AsyncJobExecutor(JobExecutor):
             return retval
 
         try:
-            async with anyio.fail_after(timeout_seconds):
+            with anyio.fail_after(timeout_seconds):
                 return await wrapper()
         except TimeoutError:
             raise JobTimedOutError from None

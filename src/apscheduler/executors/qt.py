@@ -53,7 +53,7 @@ class QtJobExecutor(JobExecutor):
         event = anyio.Event()
         self._signals.run_job.emit((func, job, future, event))
         try:
-            async with anyio.fail_after(timeout_seconds):
+            with anyio.fail_after(timeout_seconds):
                 await event.wait()
         except TimeoutError:
             raise JobTimedOutError from None
